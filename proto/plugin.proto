@@ -1,0 +1,14 @@
+syntax = "proto3";
+package pmx.mod_host.plugins;
+
+enum PmxPluginType {
+  LV_2 = 0;
+}
+
+message PmxPlugin {
+  uint32 id = 1;
+  uint32 mod_host_id = 2;
+  string name = 3;
+  string plugin_uri = 4;
+  PmxPluginType plugin_type = 5;
+}

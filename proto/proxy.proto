@@ -1,0 +1,17 @@
+syntax = "proto3";
+import "proto/plugin.proto";
+
+package pmx.mod_host;
+
+message CreatePluginInstanceRequest {
+  pmx.mod_host.plugins.PmxPluginType plugin_type = 1;
+  string plugin_uri = 2;
+}
+
+message CreatePluginInstanceResponse {
+  pmx.mod_host.plugins.PmxPlugin plugin = 1;
+}
+
+service ModHostProxy {
+  rpc CreatePluginInstance(CreatePluginInstanceRequest) returns (CreatePluginInstanceResponse);
+}
