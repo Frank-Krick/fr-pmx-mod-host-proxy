@@ -29,6 +29,10 @@ pub mod pmx {
         pub mod channel_strip {
             tonic::include_proto!("pmx.channel_strip");
         }
+
+        pub mod looper {
+            tonic::include_proto!("pmx.looper");
+        }
     }
 
     pub mod mod_host {
