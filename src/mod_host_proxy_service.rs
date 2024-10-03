@@ -22,6 +22,10 @@ pub mod pmx {
             tonic::include_proto!("pmx.input");
         }
 
+        pub mod output {
+            tonic::include_proto!("pmx.output");
+        }
+
         pub mod plugin {
             tonic::include_proto!("pmx.plugin");
         }
@@ -32,6 +36,10 @@ pub mod pmx {
 
         pub mod looper {
             tonic::include_proto!("pmx.looper");
+        }
+
+        pub mod output_stage {
+            tonic::include_proto!("pmx.output_stage");
         }
     }
 
