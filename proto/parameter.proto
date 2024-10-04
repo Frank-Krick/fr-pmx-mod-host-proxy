@@ -1,0 +1,8 @@
+syntax = "proto3";
+package pmx.mod_host.parameters;
+
+message PmxParameter {
+  uint32 instance_number = 1;
+  string symbol = 2;
+  double value = 3;
+}

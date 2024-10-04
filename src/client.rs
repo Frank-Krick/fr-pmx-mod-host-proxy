@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use pmx::mod_host::{
-    mod_host_proxy_client::ModHostProxyClient, plugins::PmxPluginType, CreatePluginInstanceRequest,
+    mod_host_proxy_client::ModHostProxyClient, parameters::PmxParameter, plugins::PmxPluginType,
+    CreatePluginInstanceRequest, GetParameterValueRequest,
 };
 
 #[derive(Parser)]
@@ -16,6 +17,20 @@ enum Commands {
         #[arg(short, long)]
         plugin_uri: String,
     },
+    GetParameterValue {
+        #[arg(short, long)]
+        instance_number: u32,
+        #[arg(short, long)]
+        symbol: String,
+    },
+    UpdateParameterValue {
+        #[arg(short, long)]
+        instance_number: u32,
+        #[arg(short, long)]
+        symbol: String,
+        #[arg(short, long)]
+        value: f64,
+    },
 }
 
 pub mod pmx {
@@ -24,6 +39,10 @@ pub mod pmx {
 
         pub mod plugins {
             tonic::include_proto!("pmx.mod_host.plugins");
+        }
+
+        pub mod parameters {
+            tonic::include_proto!("pmx.mod_host.parameters");
         }
     }
 }
@@ -44,6 +63,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     plugin_uri,
                 };
                 let response = client.create_plugin_instance(request).await.unwrap();
+                println!("{response:#?}");
+            }
+            Commands::GetParameterValue {
+                instance_number,
+                symbol,
+            } => {
+                let service_urls = fr_pmx_config_lib::read_service_urls();
+                let mut client = ModHostProxyClient::connect(service_urls.pmx_mod_host_proxy_url)
+                    .await
+                    .unwrap();
+                let request = GetParameterValueRequest {
+                    instance_number,
+                    symbol,
+                };
+                let response = client.get_parameter_value(request).await.unwrap();
+                println!("{response:#?}");
+            }
+            Commands::UpdateParameterValue {
+                instance_number,
+                symbol,
+                value,
+            } => {
+                let service_urls = fr_pmx_config_lib::read_service_urls();
+                let mut client = ModHostProxyClient::connect(service_urls.pmx_mod_host_proxy_url)
+                    .await
+                    .unwrap();
+                let request = PmxParameter {
+                    instance_number,
+                    symbol,
+                    value,
+                };
+                let response = client.update_parameter_value(request).await.unwrap();
                 println!("{response:#?}");
             }
         }

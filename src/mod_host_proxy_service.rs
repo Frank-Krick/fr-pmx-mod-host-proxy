@@ -1,7 +1,9 @@
 use std::result::Result;
 
 use pmx::mod_host::mod_host_proxy_server::ModHostProxy;
+use pmx::mod_host::parameters::PmxParameter;
 use pmx::mod_host::plugins::PmxPlugin;
+use pmx::mod_host::GetParameterValueRequest;
 use pmx::registry::pmx_registry_client::PmxRegistryClient;
 use pmx::registry::RegisterPluginRequest;
 use tonic::{async_trait, Request, Response, Status};
@@ -48,6 +50,10 @@ pub mod pmx {
 
         pub mod plugins {
             tonic::include_proto!("pmx.mod_host.plugins");
+        }
+
+        pub mod parameters {
+            tonic::include_proto!("pmx.mod_host.parameters");
         }
     }
 }
@@ -107,5 +113,47 @@ impl ModHostProxy for ModHostProxyService {
                 }))
             }
         }
+    }
+
+    async fn get_parameter_value(
+        &self,
+        request: Request<GetParameterValueRequest>,
+    ) -> Result<Response<PmxParameter>, Status> {
+        let inner = request.into_inner();
+        let (response_sender, response_reader) = tokio::sync::oneshot::channel();
+        self.proxy_sender
+            .send(ModHostProxyRequests::GetParameterValue {
+                instance_number: inner.instance_number,
+                symbol: inner.symbol.clone(),
+                sender: response_sender,
+            })
+            .unwrap();
+        let result = response_reader.await.unwrap();
+
+        Ok(Response::new(PmxParameter {
+            instance_number: inner.instance_number,
+            symbol: inner.symbol,
+            value: result,
+        }))
+    }
+
+    async fn update_parameter_value(
+        &self,
+        request: Request<PmxParameter>,
+    ) -> Result<Response<PmxParameter>, Status> {
+        let inner = request.into_inner();
+        self.proxy_sender
+            .send(ModHostProxyRequests::UpdateParameterValue {
+                instance_number: inner.instance_number,
+                symbol: inner.symbol.clone(),
+                value: inner.value,
+            })
+            .unwrap();
+
+        Ok(Response::new(PmxParameter {
+            instance_number: inner.instance_number,
+            symbol: inner.symbol,
+            value: inner.value,
+        }))
     }
 }
